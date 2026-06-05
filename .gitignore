@@ -1,6 +1,9 @@
 # Documentation (local only — learning notes, architecture docs)
 documentation/
 
+# Claude Code configuration (local only)
+.claude/
+
 # Python
 __pycache__/
 *.py[cod]
