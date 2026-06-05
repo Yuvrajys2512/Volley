@@ -1,36 +1,24 @@
-from openai import OpenAI
-from volley.config import OPENAI_API_KEY, EMBEDDING_MODEL
+from sentence_transformers import SentenceTransformer
 
-_client = None
+# Runs locally — no API key, no cost, no rate limits.
+# Downloaded once (~80MB) and cached on first use.
+_model = None
 
 
-def _get_client() -> OpenAI:
-    global _client
-    if _client is None:
-        if not OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY is not set in your .env file.")
-        _client = OpenAI(api_key=OPENAI_API_KEY)
-    return _client
+def _get_model() -> SentenceTransformer:
+    global _model
+    if _model is None:
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
 
 
 def embed(text: str) -> list[float]:
     """Return the embedding vector for a single piece of text."""
-    client = _get_client()
     text = text.replace("\n", " ").strip()
-    response = client.embeddings.create(
-        input=text,
-        model=EMBEDDING_MODEL,
-    )
-    return response.data[0].embedding
+    return _get_model().encode(text, normalize_embeddings=True).tolist()
 
 
 def embed_batch(texts: list[str]) -> list[list[float]]:
-    """Embed multiple texts in a single API call (more efficient than looping)."""
-    client = _get_client()
+    """Embed multiple texts in one pass (more efficient than looping)."""
     cleaned = [t.replace("\n", " ").strip() for t in texts]
-    response = client.embeddings.create(
-        input=cleaned,
-        model=EMBEDDING_MODEL,
-    )
-    # API returns embeddings in the same order as input
-    return [item.embedding for item in response.data]
+    return _get_model().encode(cleaned, normalize_embeddings=True).tolist()

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from volley.config import CLASSIFICATION_MODEL, OPENAI_API_KEY, CONFIDENCE_THRESHOLD
+from volley.config import CLASSIFICATION_MODEL, GROQ_API_KEY, CONFIDENCE_THRESHOLD
 
 # ── Output schema ──────────────────────────────────────────────────────────────
 
@@ -40,7 +40,8 @@ to work with you.
 - **partnership**: Another company proposing a collaboration, integration, guest post, \
 co-marketing, or similar mutual arrangement.
 - **cold_outreach**: Someone selling TO you — software, ads, services, recruiting. \
-You are their target, not the other way around.
+You are their target, not the other way around. Key signal: they are pitching a product/service \
+THEY own (CRM, SaaS tool, agency, recruiting). They want YOUR money or time, not the reverse.
 - **support_request**: An existing client or user reporting a problem or asking for help.
 - **unrelated**: Newsletter, automated notification, receipt, calendar invite, spam, \
 or anything that does not require a personal reply.
@@ -50,6 +51,9 @@ or anything that does not require a personal reply.
 - If the email could be an inbound_lead but you're unsure, classify it as inbound_lead \
 with lower confidence rather than defaulting to unrelated.
 - Generic "we should connect sometime" from unknown people with no specific ask = cold_outreach.
+- If the email mentions "our product", "our platform", "our tool", "our software", "book a demo", \
+"free trial" — it is almost certainly cold_outreach, NOT inbound_lead.
+- An inbound_lead is someone who wants to HIRE or PAY you. A cold_outreach is someone who wants YOU to pay THEM.
 - If the sender mentions a mutual contact or "was referred by" = referral.
 - Only mark is_lead=true for: inbound_lead, follow_up, referral, partnership.
 
@@ -70,12 +74,12 @@ _llm = None
 def _get_llm():
     global _llm
     if _llm is None:
-        if not OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY is not set in your .env file.")
-        llm = ChatOpenAI(
+        if not GROQ_API_KEY:
+            raise RuntimeError("GROQ_API_KEY is not set in your .env file.")
+        llm = ChatGroq(
             model=CLASSIFICATION_MODEL,
-            api_key=OPENAI_API_KEY,
-            temperature=0,  # deterministic output for classification
+            api_key=GROQ_API_KEY,
+            temperature=0,
         )
         _llm = llm.with_structured_output(EmailClassification)
     return _llm
@@ -104,8 +108,4 @@ def classify_email(email: dict) -> EmailClassification:
 
 
 def needs_human_review(result: EmailClassification) -> bool:
-    """
-    Returns True if confidence is below the threshold — meaning a human
-    should confirm the classification before the agent proceeds.
-    """
     return result.is_lead and result.confidence < CONFIDENCE_THRESHOLD

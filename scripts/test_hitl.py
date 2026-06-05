@@ -53,8 +53,8 @@ SENT_EMAILS = [
 
 INBOUND_EMAIL = {
     "id": "test_hitl_001",
-    "thread_id": "thread_hitl_001",
-    "from": "james.wu@b2bstartup.com",
+    "thread_id": "",  # no real thread — will send as standalone email
+    "from": "yuvrajys2512@gmail.com",  # send to yourself so you can verify it arrives
     "to": "me@example.com",
     "subject": "Looking for a growth consultant",
     "body": (

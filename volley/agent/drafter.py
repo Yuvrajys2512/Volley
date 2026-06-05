@@ -1,6 +1,6 @@
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from volley.config import DRAFT_MODEL, OPENAI_API_KEY
+from volley.config import DRAFT_MODEL, GROQ_API_KEY
 from volley.gmail.reader import truncate_body
 
 # ── Prompt ─────────────────────────────────────────────────────────────────────
@@ -46,12 +46,12 @@ _llm = None
 def _get_llm():
     global _llm
     if _llm is None:
-        if not OPENAI_API_KEY:
-            raise RuntimeError("OPENAI_API_KEY is not set in your .env file.")
-        _llm = ChatOpenAI(
+        if not GROQ_API_KEY:
+            raise RuntimeError("GROQ_API_KEY is not set in your .env file.")
+        _llm = ChatGroq(
             model=DRAFT_MODEL,
-            api_key=OPENAI_API_KEY,
-            temperature=0.4,  # slight creativity for natural-sounding replies
+            api_key=GROQ_API_KEY,
+            temperature=0.4,
         )
     return _llm
 
@@ -64,14 +64,7 @@ def _get_llm():
 )
 def generate_draft(email: dict, tone_examples: list[dict]) -> str:
     """
-    Generate a reply draft for the given email using the retrieved tone examples.
-
-    Args:
-        email: dict with 'from', 'subject', 'body' keys (the inbound email)
-        tone_examples: list of dicts with 'body' and 'metadata' from retrieve_similar()
-
-    Returns:
-        The draft reply as a plain string.
+    Generate a reply draft for the given email using retrieved tone examples.
     """
     examples_text = _format_tone_examples(tone_examples)
 
@@ -87,7 +80,6 @@ def generate_draft(email: dict, tone_examples: list[dict]) -> str:
 
 
 def _format_tone_examples(examples: list[dict]) -> str:
-    """Format retrieved tone examples into a readable block for the prompt."""
     if not examples:
         return "(No tone examples available — write in a professional but warm tone.)"
 

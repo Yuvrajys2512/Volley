@@ -11,21 +11,19 @@ def require(key: str) -> str:
     return value
 
 
-# LLM
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+# LLM — Groq (free tier)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # Gmail OAuth
 GOOGLE_CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 GOOGLE_TOKEN_FILE = os.getenv("GOOGLE_TOKEN_FILE", "token.json")
 
-# RAG
+# RAG — embeddings run locally via sentence-transformers (no API key needed)
 CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 
 # Agent
-CLASSIFICATION_MODEL = os.getenv("CLASSIFICATION_MODEL", "gpt-4o-mini")
-DRAFT_MODEL = os.getenv("DRAFT_MODEL", "gpt-4o")
+CLASSIFICATION_MODEL = os.getenv("CLASSIFICATION_MODEL", "llama-3.3-70b-versatile")
+DRAFT_MODEL = os.getenv("DRAFT_MODEL", "llama-3.3-70b-versatile")
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.75"))
 
 # Watcher

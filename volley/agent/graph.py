@@ -69,5 +69,11 @@ def build_graph(checkpointer=None):
 
 def get_app():
     """Return a compiled graph with SQLite checkpointing enabled."""
-    checkpointer = SqliteSaver.from_conn_string(CHECKPOINT_DB)
+    import sqlite3
+
+    # In current LangGraph, SqliteSaver wraps a live sqlite3 connection.
+    # from_conn_string() is a context manager, so we build the connection
+    # ourselves and keep it open for the life of the process.
+    conn = sqlite3.connect(CHECKPOINT_DB, check_same_thread=False)
+    checkpointer = SqliteSaver(conn)
     return build_graph(checkpointer=checkpointer)
