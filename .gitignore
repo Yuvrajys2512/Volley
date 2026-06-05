@@ -14,16 +14,21 @@ env/
 *.egg-info/
 dist/
 build/
+uv.lock
 
 # Environment variables
 .env
 .env.local
 .env.*.local
 
-# Credentials
+# Credentials & tokens (NEVER commit these)
 credentials.json
 token.json
 *.pickle
+
+# Data
+chroma_db/
+volley.db
 
 # IDE
 .vscode/

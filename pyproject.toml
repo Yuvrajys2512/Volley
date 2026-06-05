@@ -1,0 +1,33 @@
+[project]
+name = "volley"
+version = "0.1.0"
+description = "Gmail-connected agentic AI system for inbound lead response"
+requires-python = ">=3.11"
+dependencies = [
+    # Agent orchestration
+    "langgraph>=0.2.0",
+    "langgraph-checkpoint-sqlite>=1.0.0",
+
+    # LLM providers
+    "langchain-openai>=0.1.0",
+    "langchain-anthropic>=0.1.0",
+
+    # Vector store
+    "chromadb>=0.5.0",
+
+    # Gmail
+    "google-api-python-client>=2.0.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.0.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+volley = "volley.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
