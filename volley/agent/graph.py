@@ -2,8 +2,11 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 from volley.agent.state import VolleyState
-from volley.agent.nodes import extract_fields, classify, retrieve_tone, draft_reply, skip
-from volley.agent.routing import route_after_classify
+from volley.agent.nodes import (
+    extract_fields, classify, retrieve_tone,
+    draft_reply, human_approval, send_email_node, skip,
+)
+from volley.agent.routing import route_after_classify, route_after_approval
 from volley.config import CHROMA_DB_PATH
 
 import os
@@ -15,10 +18,10 @@ def build_graph(checkpointer=None):
     """
     Assemble and compile the Volley LangGraph agent.
 
-    Phase 6 graph:
-        extract_fields → classify → [skip | retrieve_tone] → draft_reply → END
-
-    Phase 7 will extend this with: draft_reply → human_approval → send_email
+    Full graph (Phase 7):
+        extract_fields → classify → retrieve_tone → draft_reply
+                                  ↘ skip → END     → human_approval → send_email → END
+                                                                     ↘ END (skipped)
     """
     g = StateGraph(VolleyState)
 
@@ -27,6 +30,8 @@ def build_graph(checkpointer=None):
     g.add_node("classify", classify)
     g.add_node("retrieve_tone", retrieve_tone)
     g.add_node("draft_reply", draft_reply)
+    g.add_node("human_approval", human_approval)
+    g.add_node("send_email", send_email_node)
     g.add_node("skip", skip)
 
     # ── Entry point ────────────────────────────────────────────────
@@ -45,10 +50,21 @@ def build_graph(checkpointer=None):
     )
 
     g.add_edge("retrieve_tone", "draft_reply")
-    g.add_edge("draft_reply", END)
+    g.add_edge("draft_reply", "human_approval")
+
+    g.add_conditional_edges(
+        "human_approval",
+        route_after_approval,
+        {
+            "send_email": "send_email",
+            "__end__": END,
+        },
+    )
+
+    g.add_edge("send_email", END)
     g.add_edge("skip", END)
 
-    return g.compile(checkpointer=checkpointer)
+    return g.compile(checkpointer=checkpointer, interrupt_before=["human_approval"])
 
 
 def get_app():

@@ -1,3 +1,5 @@
+from langgraph.types import interrupt
+
 from volley.agent.state import VolleyState
 from volley.agent.classifier import classify_email
 from volley.agent.drafter import generate_draft
@@ -59,6 +61,50 @@ def draft_reply(state: VolleyState) -> dict:
     print(f"  [draft_reply] → Draft generated ({len(draft)} chars)")
 
     return {"draft": draft}
+
+
+def human_approval(state: VolleyState) -> dict:
+    """
+    Pause the graph and wait for the user to approve, edit, or skip the draft.
+    LangGraph persists the full state to the checkpointer at this point.
+    The graph resumes only when Command(resume=...) is passed by the runner.
+    """
+    decision = interrupt({
+        "draft": state["draft"],
+        "sender": state["sender"],
+        "subject": state["subject"],
+        "body": state["body"],
+    })
+
+    status = decision.get("status", "skipped")          # "approved" | "edited" | "skipped"
+    edited_text = decision.get("edited_text")
+
+    final_reply = edited_text if status == "edited" else state["draft"]
+
+    return {
+        "approval_status": status,
+        "final_reply": final_reply if status != "skipped" else None,
+    }
+
+
+def send_email_node(state: VolleyState) -> dict:
+    """Send the approved/edited reply via the Gmail API."""
+    from volley.gmail.auth import get_gmail_service
+    from volley.gmail.sender import send_reply
+
+    print(f"  [send_email] Sending reply to {state['sender']}...")
+
+    service = get_gmail_service()
+    send_reply(
+        service=service,
+        to=state["sender"],
+        subject=state["subject"],
+        body=state["final_reply"],
+        thread_id=state["thread_id"],
+    )
+
+    print(f"  [send_email] → Sent.")
+    return {}
 
 
 def skip(state: VolleyState) -> dict:
