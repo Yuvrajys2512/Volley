@@ -1,4 +1,5 @@
 from langchain_openai import ChatOpenAI
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from volley.config import DRAFT_MODEL, OPENAI_API_KEY
 from volley.gmail.reader import truncate_body
 
@@ -55,6 +56,12 @@ def _get_llm():
     return _llm
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(Exception),
+    reraise=True,
+)
 def generate_draft(email: dict, tone_examples: list[dict]) -> str:
     """
     Generate a reply draft for the given email using the retrieved tone examples.

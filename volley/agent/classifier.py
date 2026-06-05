@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from volley.config import CLASSIFICATION_MODEL, OPENAI_API_KEY, CONFIDENCE_THRESHOLD
 
 # ── Output schema ──────────────────────────────────────────────────────────────
@@ -80,6 +81,12 @@ def _get_llm():
     return _llm
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(Exception),
+    reraise=True,
+)
 def classify_email(email: dict) -> EmailClassification:
     """
     Classify a single email dict (must have 'from', 'subject', 'body' keys).

@@ -88,14 +88,15 @@ def human_approval(state: VolleyState) -> dict:
 
 
 def send_email_node(state: VolleyState) -> dict:
-    """Send the approved/edited reply via the Gmail API."""
+    """Send the approved/edited reply via the Gmail API, then index it into the corpus."""
     from volley.gmail.auth import get_gmail_service
     from volley.gmail.sender import send_reply
+    from volley.rag.corpus import index_single_email
 
     print(f"  [send_email] Sending reply to {state['sender']}...")
 
     service = get_gmail_service()
-    send_reply(
+    sent = send_reply(
         service=service,
         to=state["sender"],
         subject=state["subject"],
@@ -104,6 +105,18 @@ def send_email_node(state: VolleyState) -> dict:
     )
 
     print(f"  [send_email] → Sent.")
+
+    # Auto-index the reply so future drafts can learn from it
+    sent_email_record = {
+        "id": sent.get("id", ""),
+        "subject": f"Re: {state['subject']}",
+        "body": state["final_reply"],
+        "to": state["sender"],
+        "date": "",
+    }
+    index_single_email(sent_email_record)
+    print(f"  [send_email] → Indexed into tone corpus.")
+
     return {}
 
 

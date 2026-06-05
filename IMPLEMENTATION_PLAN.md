@@ -206,6 +206,6 @@ classify ──▶ retrieve_tone ──▶ draft_reply ──▶ human_approval 
 | 5 — Draft Generation | ✅ Complete |
 | 6 — LangGraph Agent Graph | ✅ Complete |
 | 7 — Human-in-the-Loop | ✅ Complete |
-| 8 — Inbox Watcher | ⬜ Not started |
-| 9 — E2E Testing & Hardening | ⬜ Not started |
-| 10 — Incremental Indexing | ⬜ Not started |
+| 8 — Inbox Watcher | ✅ Complete |
+| 9 — E2E Testing & Hardening | ✅ Complete |
+| 10 — Incremental Indexing | ✅ Complete |
