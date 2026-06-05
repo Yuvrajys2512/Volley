@@ -201,7 +201,7 @@ classify ──▶ retrieve_tone ──▶ draft_reply ──▶ human_approval 
 |-------|--------|
 | 1 — Project Scaffolding | ✅ Complete |
 | 2 — Gmail API Integration | ⬜ Not started |
-| 3 — RAG Tone Corpus | ⬜ Not started |
+| 3 — RAG Tone Corpus | ✅ Complete |
 | 4 — LLM Classification | ⬜ Not started |
 | 5 — Draft Generation | ⬜ Not started |
 | 6 — LangGraph Agent Graph | ⬜ Not started |
