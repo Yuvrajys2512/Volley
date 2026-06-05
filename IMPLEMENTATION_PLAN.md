@@ -202,9 +202,9 @@ classify ──▶ retrieve_tone ──▶ draft_reply ──▶ human_approval 
 | 1 — Project Scaffolding | ✅ Complete |
 | 2 — Gmail API Integration | ⬜ Not started |
 | 3 — RAG Tone Corpus | ✅ Complete |
-| 4 — LLM Classification | ⬜ Not started |
-| 5 — Draft Generation | ⬜ Not started |
-| 6 — LangGraph Agent Graph | ⬜ Not started |
+| 4 — LLM Classification | ✅ Complete |
+| 5 — Draft Generation | ✅ Complete |
+| 6 — LangGraph Agent Graph | ✅ Complete |
 | 7 — Human-in-the-Loop | ⬜ Not started |
 | 8 — Inbox Watcher | ⬜ Not started |
 | 9 — E2E Testing & Hardening | ⬜ Not started |
