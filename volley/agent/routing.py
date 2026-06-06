@@ -1,5 +1,4 @@
 from volley.agent.state import VolleyState
-from volley.config import CONFIDENCE_THRESHOLD
 
 
 def route_after_classify(state: VolleyState) -> str:

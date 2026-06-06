@@ -1,5 +1,14 @@
 import sys
 
+# On Windows the default console encoding (cp1252) can't render the Unicode
+# characters used in our log output (→, emoji from email subjects), which
+# raises UnicodeEncodeError mid-run. Force UTF-8 so logging never crashes.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 
 def main():
     command = sys.argv[1] if len(sys.argv) > 1 else "help"
@@ -8,8 +17,8 @@ def main():
     if command == "watch":
         dry_run = "--dry-run" in flags
 
-        from volley.gmail.auth import get_gmail_service
         from volley.agent.graph import get_app
+        from volley.gmail.auth import get_gmail_service
         from volley.gmail.watcher import watch
 
         print("Connecting to Gmail...")
@@ -40,7 +49,7 @@ def main():
             print("Usage: volley search <query>")
             sys.exit(1)
 
-        from volley.rag.store import retrieve_similar, corpus_size
+        from volley.rag.store import corpus_size, retrieve_similar
 
         size = corpus_size()
         if size == 0:

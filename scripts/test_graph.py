@@ -14,15 +14,15 @@ No Gmail connection needed.
 
 import os
 import sys
-import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from volley.rag.store import index_email
 from volley.agent.graph import build_graph  # no checkpointer needed for testing
+from volley.rag.store import index_email
 
 DIVIDER = "=" * 65
 
@@ -128,7 +128,7 @@ def print_state(state: dict):
     print(f"  confidence: {state.get('confidence')}")
     print(f"  reasoning:  {state.get('classification_reasoning')}")
     if state.get("draft"):
-        print(f"\n  DRAFT REPLY:")
+        print("\n  DRAFT REPLY:")
         print("  " + "\n  ".join(state["draft"].splitlines()))
 
 

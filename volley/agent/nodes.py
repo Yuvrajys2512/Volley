@@ -1,8 +1,8 @@
 from langgraph.types import interrupt
 
-from volley.agent.state import VolleyState
 from volley.agent.classifier import classify_email
 from volley.agent.drafter import generate_draft
+from volley.agent.state import VolleyState
 from volley.rag.store import retrieve_similar
 
 
@@ -39,7 +39,7 @@ def classify(state: VolleyState) -> dict:
 
 def retrieve_tone(state: VolleyState) -> dict:
     """Query ChromaDB for the most similar past emails to use as tone context."""
-    print(f"  [retrieve_tone] Searching tone corpus...")
+    print("  [retrieve_tone] Searching tone corpus...")
 
     query = f"{state['subject']}\n\n{state['body']}"
     examples = retrieve_similar(query, n_results=5)
@@ -51,7 +51,7 @@ def retrieve_tone(state: VolleyState) -> dict:
 
 def draft_reply(state: VolleyState) -> dict:
     """Generate a reply draft using the inbound email + retrieved tone examples."""
-    print(f"  [draft_reply] Generating draft...")
+    print("  [draft_reply] Generating draft...")
 
     draft = generate_draft(
         email=state["email"],
@@ -104,7 +104,7 @@ def send_email_node(state: VolleyState) -> dict:
         thread_id=state["thread_id"],
     )
 
-    print(f"  [send_email] → Sent.")
+    print("  [send_email] → Sent.")
 
     # Auto-index the reply so future drafts can learn from it
     sent_email_record = {
@@ -115,7 +115,7 @@ def send_email_node(state: VolleyState) -> dict:
         "date": "",
     }
     index_single_email(sent_email_record)
-    print(f"  [send_email] → Indexed into tone corpus.")
+    print("  [send_email] → Indexed into tone corpus.")
 
     return {}
 

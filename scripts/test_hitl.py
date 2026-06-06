@@ -21,11 +21,12 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from volley.rag.store import index_email
 from volley.agent.graph import get_app
 from volley.agent.runner import process_email
+from volley.rag.store import index_email
 
 SENT_EMAILS = [
     {

@@ -8,8 +8,8 @@ Flow:
 """
 
 import uuid
-from langgraph.types import Command
 
+from langgraph.types import Command
 
 DIVIDER = "─" * 65
 BOLD = "\033[1m"
@@ -56,9 +56,9 @@ def _show_approval_prompt(state: dict) -> dict:
     print(DIVIDER)
     print(state.get("draft", ""))
     print(DIVIDER)
-    print(f"\n  [A] Approve and send")
-    print(f"  [E] Edit before sending")
-    print(f"  [S] Skip (don't send)")
+    print("\n  [A] Approve and send")
+    print("  [E] Edit before sending")
+    print("  [S] Skip (don't send)")
     print()
 
     while True:

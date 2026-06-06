@@ -10,11 +10,11 @@ and prints the result as a table. No Gmail connection needed.
 
 import os
 import sys
-import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from volley.agent.classifier import classify_email, needs_human_review

@@ -1,5 +1,6 @@
 from langchain_groq import ChatGroq
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
 from volley.config import DRAFT_MODEL, GROQ_API_KEY
 from volley.gmail.reader import truncate_body
 

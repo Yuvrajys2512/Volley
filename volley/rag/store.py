@@ -95,7 +95,7 @@ def retrieve_similar(query: str, n_results: int = 5) -> list[dict]:
     )
 
     output = []
-    for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
+    for doc, meta in zip(results["documents"][0], results["metadatas"][0], strict=False):
         output.append({"body": doc, "metadata": meta})
 
     return output

@@ -4,17 +4,16 @@ deduplicates against a local SQLite store, and fires the agent graph for each
 new email it finds.
 """
 
-import time
-import signal
-import sqlite3
-from datetime import datetime
-
-from volley.gmail.reader import fetch_inbox_emails
-from volley.config import POLL_INTERVAL_SECONDS
-
 # Path to the dedup database (same dir as the checkpointer DB)
 import os
-from volley.config import CHROMA_DB_PATH
+import signal
+import sqlite3
+import time
+from datetime import datetime
+
+from volley.config import CHROMA_DB_PATH, POLL_INTERVAL_SECONDS
+from volley.gmail.reader import fetch_inbox_emails
+
 SEEN_DB = os.path.join(os.path.dirname(CHROMA_DB_PATH), "seen_messages.db")
 
 
@@ -71,7 +70,6 @@ def watch(service, app, dry_run: bool = False):
         app:      Compiled LangGraph app (with checkpointer).
         dry_run:  If True, classify and draft but never send.
     """
-    from volley.agent.runner import process_email
 
     _init_seen_db()
     signal.signal(signal.SIGINT, _handle_sigint)

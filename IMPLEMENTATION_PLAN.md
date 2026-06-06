@@ -200,7 +200,7 @@ classify ──▶ retrieve_tone ──▶ draft_reply ──▶ human_approval 
 | Phase | Status |
 |-------|--------|
 | 1 — Project Scaffolding | ✅ Complete |
-| 2 — Gmail API Integration | ⬜ Not started |
+| 2 — Gmail API Integration | ✅ Complete |
 | 3 — RAG Tone Corpus | ✅ Complete |
 | 4 — LLM Classification | ✅ Complete |
 | 5 — Draft Generation | ✅ Complete |

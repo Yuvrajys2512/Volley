@@ -1,5 +1,6 @@
 import base64
 from email.mime.text import MIMEText
+
 from googleapiclient.errors import HttpError
 
 
@@ -26,7 +27,7 @@ def send_reply(service, to: str, subject: str, body: str, thread_id: str) -> dic
     except HttpError as e:
         if thread_id and "thread_id" in str(e).lower():
             # Invalid thread — send without threading
-            print(f"  [send] Invalid thread_id, sending as standalone email instead.")
+            print("  [send] Invalid thread_id, sending as standalone email instead.")
             return service.users().messages().send(
                 userId="me",
                 body={"raw": raw},

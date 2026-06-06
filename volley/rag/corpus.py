@@ -2,9 +2,9 @@ import json
 import os
 from datetime import datetime
 
-from volley.gmail.history import fetch_sent_emails, fetch_sent_emails_since, filter_for_corpus
-from volley.rag.store import index_emails_batch, corpus_size
 from volley.config import CHROMA_DB_PATH
+from volley.gmail.history import fetch_sent_emails, fetch_sent_emails_since, filter_for_corpus
+from volley.rag.store import corpus_size, index_emails_batch
 
 BATCH_SIZE = 50
 INDEX_STATE_FILE = os.path.join(os.path.dirname(CHROMA_DB_PATH), "index_state.json")
@@ -86,8 +86,8 @@ def incremental_update(service) -> dict:
 
 def index_single_email(email: dict):
     """Index one email immediately — called after a reply is sent."""
-    from volley.rag.store import index_email
     from volley.gmail.history import filter_for_corpus
+    from volley.rag.store import index_email
 
     eligible = filter_for_corpus([email])
     if eligible:

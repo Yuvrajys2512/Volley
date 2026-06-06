@@ -19,9 +19,10 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from volley.rag.store import index_email, retrieve_similar, corpus_size
+from volley.rag.store import corpus_size, index_email, retrieve_similar
 
 SAMPLE_EMAILS = [
     {

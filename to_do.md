@@ -44,8 +44,10 @@ This saves `token.json` in the project root. Gmail is now connected.
 Copy `.env.example` to `.env` and fill in:
 
 ```
-OPENAI_API_KEY=sk-...        ← get from https://platform.openai.com/api-keys
+GROQ_API_KEY=gsk_...         ← get a free key from https://console.groq.com/keys
 ```
+
+> Embeddings run locally via `sentence-transformers` — no embedding API key needed.
 
 ---
 
@@ -57,19 +59,19 @@ Run these after API keys and credentials are set up:
 # Phase 3 — RAG (no Gmail needed, uses sample data)
 uv run python scripts/test_rag.py
 
-# Phase 4 — Classification (needs OPENAI_API_KEY)
+# Phase 4 — Classification (needs GROQ_API_KEY)
 uv run python scripts/test_classifier.py
 
-# Phase 5 — Draft generation (needs OPENAI_API_KEY)
+# Phase 5 — Draft generation (needs GROQ_API_KEY)
 uv run python scripts/test_drafter.py
 
 # Phase 2 — Gmail (needs credentials.json)
 uv run python scripts/test_gmail.py
 
-# Phase 6 — Full agent graph (needs OPENAI_API_KEY)
+# Phase 6 — Full agent graph (needs GROQ_API_KEY)
 uv run python scripts/test_graph.py
 
-# Phase 7 — Human-in-the-loop (needs OPENAI_API_KEY + credentials.json)
+# Phase 7 — Human-in-the-loop (needs GROQ_API_KEY + credentials.json)
 uv run python scripts/test_hitl.py
 ```
 

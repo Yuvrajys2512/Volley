@@ -19,12 +19,13 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from volley.gmail.auth import get_gmail_service
+from volley.gmail.history import fetch_sent_emails, filter_for_corpus
 from volley.gmail.reader import fetch_inbox_emails, truncate_body
 from volley.gmail.sender import send_email
-from volley.gmail.history import fetch_sent_emails, filter_for_corpus
 
 DIVIDER = "─" * 60
 

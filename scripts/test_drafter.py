@@ -19,10 +19,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from volley.rag.store import index_email, retrieve_similar
 from volley.agent.drafter import generate_draft
+from volley.rag.store import index_email, retrieve_similar
 
 # ── Sample tone corpus (pretend these are YOUR past sent emails) ───────────────
 
@@ -112,7 +113,7 @@ def main():
 
     for inbound in INBOUND_EMAILS:
         print("=" * 65)
-        print(f"INBOUND EMAIL")
+        print("INBOUND EMAIL")
         print(f"From:    {inbound['from']}")
         print(f"Subject: {inbound['subject']}")
         print(f"\n{inbound['body']}")
