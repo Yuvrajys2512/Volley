@@ -32,24 +32,25 @@ Volley filters out the newsletter/notification noise, recognizes the emails that
    └──────────────┘   └────┬─────┘                └──────┘
                            │ is_lead (conf ≥ 0.75)
                            ▼
-                  ┌────────────────┐   ┌────────────┐   ┌────────────────┐
-                  │ retrieve_tone  ├──►│ draft_reply ├──►│ human_approval │  ◄── interrupt()
-                  │ (RAG over your │   │ (few-shot   │   │  [A]/[E]/[S]   │
-                  │  sent mail)    │   │  on tone)   │   └───────┬────────┘
-                  └────────────────┘   └────────────┘           │
-                                            approved ┌───────────┴──────────┐ skipped
-                                                     ▼                      ▼
-                                              ┌────────────┐              END
-                                              │ send_email ├──► END
-                                              └────────────┘
+                  ┌────────────────┐   ┌────────────┐   ┌──────────────────┐
+                  │ retrieve_tone  ├──►│ draft_reply ├──►│  human_approval  │  ◄── interrupt()
+                  │ (RAG over your │   │ (few-shot   │   │ [A]pprove [E]dit │
+                  │  sent mail)    │   │  on tone)   │   │ [D]raft  [S]kip  │
+                  └────────────────┘   └────────────┘   └────────┬─────────┘
+                              approve/edit ┌──────────────┬───────┴───────┐ skip
+                                           ▼              ▼ draft          ▼
+                                    ┌────────────┐  ┌──────────────┐    END
+                                    │ send_email │  │ create_draft │
+                                    │  (+ index) ├─►│ (Gmail Drafts├─► END
+                                    └────────────┘  └──────────────┘
 ```
 
 1. **Watch** — poll the inbox for unread mail; skip anything already processed (SQLite dedup store).
 2. **Classify** — an LLM tags intent (`inbound_lead`, `follow_up`, `referral`, `partnership`, `cold_outreach`, `support_request`, `unrelated`) with structured output and a confidence score. Below threshold or not a lead → `skip`.
 3. **Retrieve tone** — embed the incoming email and pull your most stylistically similar past replies from ChromaDB.
 4. **Draft** — generate a reply, few-shot-conditioned on those examples so it matches your voice.
-5. **Approve** — the graph *interrupts* and shows you the draft in the terminal: **[A]pprove / [E]dit / [S]kip**.
-6. **Send & learn** — on approval it sends in-thread, then indexes the sent reply back into the corpus so tone matching improves over time.
+5. **Approve** — the graph *interrupts* and shows you the draft in the terminal: **[A]pprove / [E]dit / [D]raft / [S]kip**.
+6. **Act & learn** — *Approve/Edit* sends in-thread and indexes the reply back into the corpus so tone matching improves over time; *Draft* saves it to your **Gmail Drafts** folder to review and send later from any device; *Skip* does nothing.
 
 ## Tech stack
 
@@ -144,7 +145,7 @@ de-duplication store, and body truncation. CI runs lint + tests on every push.
 ## Roadmap
 
 - [x] Automated test suite + CI
-- [ ] Write drafts straight into the Gmail **Drafts** folder (review/edit from any device)
+- [x] Save replies to the Gmail **Drafts** folder (review/edit/send from any device)
 - [ ] Multi-tenant web app + OAuth so others can connect their own inbox
 
 ---

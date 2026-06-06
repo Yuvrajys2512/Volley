@@ -120,6 +120,30 @@ def send_email_node(state: VolleyState) -> dict:
     return {}
 
 
+def create_draft_node(state: VolleyState) -> dict:
+    """
+    Save the reply to the user's Gmail Drafts folder instead of sending it.
+    The user reviews and sends it later from Gmail itself. Nothing is indexed
+    into the tone corpus here — that happens only when a reply is actually sent.
+    """
+    from volley.gmail.auth import get_gmail_service
+    from volley.gmail.sender import create_draft
+
+    print(f"  [create_draft] Saving draft reply to {state['sender']} in Gmail...")
+
+    service = get_gmail_service()
+    create_draft(
+        service=service,
+        to=state["sender"],
+        subject=state["subject"],
+        body=state["final_reply"],
+        thread_id=state["thread_id"],
+    )
+
+    print("  [create_draft] → Saved to Gmail Drafts. Review and send from Gmail.")
+    return {}
+
+
 def skip(state: VolleyState) -> dict:
     """Terminal node for emails that are not leads — no action taken."""
     print(f"  [skip] Not a lead (intent={state.get('intent')}) — skipping.")

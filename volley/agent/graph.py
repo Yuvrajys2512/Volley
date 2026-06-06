@@ -5,6 +5,7 @@ from langgraph.graph import END, StateGraph
 
 from volley.agent.nodes import (
     classify,
+    create_draft_node,
     draft_reply,
     extract_fields,
     human_approval,
@@ -23,10 +24,11 @@ def build_graph(checkpointer=None):
     """
     Assemble and compile the Volley LangGraph agent.
 
-    Full graph (Phase 7):
-        extract_fields → classify → retrieve_tone → draft_reply
-                                  ↘ skip → END     → human_approval → send_email → END
-                                                                     ↘ END (skipped)
+    Full graph:
+        extract_fields → classify → retrieve_tone → draft_reply → human_approval
+                                  ↘ skip → END                  ├ approved/edited → send_email → END
+                                                                ├ drafted        → create_draft → END
+                                                                ↘ skipped        → END
     """
     g = StateGraph(VolleyState)
 
@@ -37,6 +39,7 @@ def build_graph(checkpointer=None):
     g.add_node("draft_reply", draft_reply)
     g.add_node("human_approval", human_approval)
     g.add_node("send_email", send_email_node)
+    g.add_node("create_draft", create_draft_node)
     g.add_node("skip", skip)
 
     # ── Entry point ────────────────────────────────────────────────
@@ -62,11 +65,13 @@ def build_graph(checkpointer=None):
         route_after_approval,
         {
             "send_email": "send_email",
+            "create_draft": "create_draft",
             "__end__": END,
         },
     )
 
     g.add_edge("send_email", END)
+    g.add_edge("create_draft", END)
     g.add_edge("skip", END)
 
     return g.compile(checkpointer=checkpointer, interrupt_before=["human_approval"])

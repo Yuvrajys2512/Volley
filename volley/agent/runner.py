@@ -58,6 +58,7 @@ def _show_approval_prompt(state: dict) -> dict:
     print(DIVIDER)
     print("\n  [A] Approve and send")
     print("  [E] Edit before sending")
+    print("  [D] Save to Gmail Drafts (review and send from Gmail later)")
     print("  [S] Skip (don't send)")
     print()
 
@@ -67,6 +68,10 @@ def _show_approval_prompt(state: dict) -> dict:
         if choice == "a":
             print("Approved. Sending...")
             return {"status": "approved"}
+
+        elif choice == "d":
+            print("Saving to Gmail Drafts...")
+            return {"status": "drafted"}
 
         elif choice == "e":
             print("Paste your edited reply below.")
@@ -89,4 +94,4 @@ def _show_approval_prompt(state: dict) -> dict:
             return {"status": "skipped"}
 
         else:
-            print("Please enter A, E, or S.")
+            print("Please enter A, E, D, or S.")

@@ -25,5 +25,5 @@ class VolleyState(TypedDict):
     draft: str | None
 
     # ── Approval (populated by human_approval node — Phase 7) ──────
-    approval_status: str | None      # "approved" | "edited" | "skipped"
-    final_reply: str | None          # the version actually sent
+    approval_status: str | None      # "approved" | "edited" | "drafted" | "skipped"
+    final_reply: str | None          # the version sent or saved to Drafts

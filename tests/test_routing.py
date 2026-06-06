@@ -25,9 +25,16 @@ class TestRouteAfterApproval:
     def test_edited_sends(self):
         assert route_after_approval({"approval_status": "edited"}) == "send_email"
 
+    def test_drafted_goes_to_create_draft(self):
+        assert route_after_approval({"approval_status": "drafted"}) == "create_draft"
+
     def test_skipped_ends(self):
         assert route_after_approval({"approval_status": "skipped"}) == "__end__"
 
     def test_missing_status_defaults_to_end(self):
         # Fail safe: an unknown/absent decision must never auto-send.
         assert route_after_approval({}) == "__end__"
+
+    def test_unknown_status_defaults_to_end(self):
+        # A status we don't recognize must never send or draft — just end.
+        assert route_after_approval({"approval_status": "weird"}) == "__end__"
