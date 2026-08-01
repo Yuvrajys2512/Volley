@@ -29,3 +29,17 @@ CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.75"))
 
 # Watcher
 POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "60"))
+
+# Phase 1 — multi-tenant server (web + worker)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://volley:volley@localhost:5433/volley")
+FERNET_KEY = os.getenv("FERNET_KEY", "")
+SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY", "")
+
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+GOOGLE_OAUTH_REDIRECT_URI = os.getenv(
+    "GOOGLE_OAUTH_REDIRECT_URI", "http://localhost:8000/auth/callback"
+)
+
+WORKER_POLL_INTERVAL_SECONDS = int(os.getenv("WORKER_POLL_INTERVAL_SECONDS", "90"))
+MAX_RUNS_PER_DAY_PER_USER = int(os.getenv("MAX_RUNS_PER_DAY_PER_USER", "200"))

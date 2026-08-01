@@ -37,12 +37,21 @@ def classify(state: VolleyState) -> dict:
     }
 
 
-def retrieve_tone(state: VolleyState) -> dict:
-    """Query ChromaDB for the most similar past emails to use as tone context."""
+def retrieve_tone(state: VolleyState, config: dict | None = None) -> dict:
+    """Retrieve the most similar past emails to use as tone context.
+
+    CLI usage (no config/configurable given) queries the legacy single-user
+    ChromaDB collection. The server graph passes a per-user `repo` via
+    `config["configurable"]` so retrieval stays scoped to that user's corpus.
+    """
     print("  [retrieve_tone] Searching tone corpus...")
 
+    configurable = (config or {}).get("configurable", {})
+    repo = configurable.get("repo")
+    user_id = state.get("user_id")
+
     query = f"{state['subject']}\n\n{state['body']}"
-    examples = retrieve_similar(query, n_results=5)
+    examples = retrieve_similar(query, user_id=user_id, n_results=5, repo=repo)
 
     print(f"  [retrieve_tone] → {len(examples)} example(s) retrieved")
 
@@ -120,25 +129,48 @@ def send_email_node(state: VolleyState) -> dict:
     return {}
 
 
-def create_draft_node(state: VolleyState) -> dict:
+def create_draft_node(state: VolleyState, config: dict | None = None) -> dict:
     """
     Save the reply to the user's Gmail Drafts folder instead of sending it.
     The user reviews and sends it later from Gmail itself. Nothing is indexed
     into the tone corpus here — that happens only when a reply is actually sent.
+
+    CLI usage (no config/configurable given) builds its own Gmail service from
+    the local token file. The server graph passes a per-user `gmail_service`
+    (and `repo`, to log the draft) via `config["configurable"]`.
     """
-    from volley.gmail.auth import get_gmail_service
     from volley.gmail.sender import create_draft
+
+    configurable = (config or {}).get("configurable", {})
+    service = configurable.get("gmail_service")
+    repo = configurable.get("repo")
+
+    if service is None:
+        from volley.gmail.auth import get_gmail_service
+
+        service = get_gmail_service()
 
     print(f"  [create_draft] Saving draft reply to {state['sender']} in Gmail...")
 
-    service = get_gmail_service()
-    create_draft(
+    # CLI path: human_approval already set final_reply (approved/edited text).
+    # Server path: there's no human_approval node, so the draft is used as-is.
+    reply_body = state.get("final_reply") or state.get("draft")
+
+    result = create_draft(
         service=service,
         to=state["sender"],
         subject=state["subject"],
-        body=state["final_reply"],
+        body=reply_body,
         thread_id=state["thread_id"],
     )
+
+    if repo is not None:
+        repo.log_draft(
+            message_id=state["email"].get("id", ""),
+            gmail_draft_id=result.get("id", ""),
+            intent=state.get("intent") or "",
+            confidence=state.get("confidence"),
+        )
 
     print("  [create_draft] → Saved to Gmail Drafts. Review and send from Gmail.")
     return {}

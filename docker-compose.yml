@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: volley
+      POSTGRES_PASSWORD: volley
+      POSTGRES_DB: volley
+    ports:
+      - "5433:5432"
+    volumes:
+      - volley_pg_data:/var/lib/postgresql/data
+
+volumes:
+  volley_pg_data:

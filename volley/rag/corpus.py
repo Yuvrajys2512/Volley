@@ -30,10 +30,14 @@ def get_last_indexed_at() -> str | None:
 
 # ── Full corpus build ──────────────────────────────────────────────────────────
 
-def build_corpus(service, max_fetch: int = 500) -> dict:
+def build_corpus(service, max_fetch: int = 500, user_id=None, repo=None) -> dict:
     """
     Full corpus build: fetch sent mail, filter, embed, and store.
     Call this once on first run.
+
+    CLI usage (user_id/repo omitted) persists a last_indexed_at watermark to
+    the local JSON file. The server/worker path (user_id or repo given) skips
+    that file entirely — the worker tracks its own per-account watermark.
     """
     print(f"Fetching up to {max_fetch} sent emails...")
     sent = fetch_sent_emails(service, max_results=max_fetch)
@@ -46,17 +50,18 @@ def build_corpus(service, max_fetch: int = 500) -> dict:
         print("Nothing to index.")
         return {"fetched": len(sent), "filtered": 0, "indexed": 0}
 
-    indexed = _index_in_batches(corpus)
-    total = corpus_size()
+    indexed = _index_in_batches(corpus, user_id=user_id, repo=repo)
+    total = corpus_size(user_id=user_id, repo=repo)
 
-    _save_index_state({"last_indexed_at": _today_str()})
+    if user_id is None and repo is None:
+        _save_index_state({"last_indexed_at": _today_str()})
     print(f"Indexed {indexed} emails. Corpus now has {total} total entries.")
     return {"fetched": len(sent), "filtered": len(corpus), "indexed": indexed}
 
 
 # ── Incremental update ─────────────────────────────────────────────────────────
 
-def incremental_update(service) -> dict:
+def incremental_update(service, user_id=None, repo=None) -> dict:
     """
     Index only sent emails newer than the last full/incremental run.
     Fast — only fetches emails sent since last index date.
@@ -75,34 +80,36 @@ def incremental_update(service) -> dict:
 
     if not corpus:
         print("Nothing new to index.")
-        _save_index_state({"last_indexed_at": _today_str()})
+        if user_id is None and repo is None:
+            _save_index_state({"last_indexed_at": _today_str()})
         return {"fetched": len(sent), "filtered": 0, "indexed": 0}
 
-    indexed = _index_in_batches(corpus)
-    _save_index_state({"last_indexed_at": _today_str()})
-    print(f"Indexed {indexed} new emails. Corpus now has {corpus_size()} total entries.")
+    indexed = _index_in_batches(corpus, user_id=user_id, repo=repo)
+    if user_id is None and repo is None:
+        _save_index_state({"last_indexed_at": _today_str()})
+    print(f"Indexed {indexed} new emails. Corpus now has {corpus_size(user_id=user_id, repo=repo)} total entries.")
     return {"fetched": len(sent), "filtered": len(corpus), "indexed": indexed}
 
 
-def index_single_email(email: dict):
+def index_single_email(email: dict, user_id=None, repo=None):
     """Index one email immediately — called after a reply is sent."""
     from volley.gmail.history import filter_for_corpus
     from volley.rag.store import index_email
 
     eligible = filter_for_corpus([email])
     if eligible:
-        index_email(eligible[0])
+        index_email(eligible[0], user_id=user_id, repo=repo)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _index_in_batches(emails: list[dict]) -> int:
+def _index_in_batches(emails: list[dict], user_id=None, repo=None) -> int:
     total_indexed = 0
     batches = [emails[i:i + BATCH_SIZE] for i in range(0, len(emails), BATCH_SIZE)]
 
     for i, batch in enumerate(batches, 1):
         print(f"  Embedding batch {i}/{len(batches)} ({len(batch)} emails)...", end=" ", flush=True)
-        n = index_emails_batch(batch)
+        n = index_emails_batch(batch, user_id=user_id, repo=repo)
         total_indexed += n
         print(f"done ({n} indexed)")
 

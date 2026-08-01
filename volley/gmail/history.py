@@ -1,3 +1,5 @@
+from googleapiclient.errors import HttpError
+
 from volley.gmail.reader import fetch_full_message
 
 
@@ -42,6 +44,64 @@ def _fetch_messages(service, message_stubs: list) -> list[dict]:
         except Exception as e:
             print(f"  Warning: could not fetch message {msg['id']}: {e}")
     return emails
+
+
+class HistoryIdExpired(Exception):
+    """Raised when Gmail's history.list rejects a startHistoryId as too old
+    (Gmail retains history for ~7 days). Caller should re-anchor via
+    current_history_id() and accept that some messages in the gap are missed."""
+
+
+def current_history_id(service) -> int:
+    """The mailbox's current historyId — used as the initial watermark right
+    after connecting (so only mail arriving after that point is processed)
+    and as the re-anchor point after a HistoryIdExpired."""
+    profile = service.users().getProfile(userId="me").execute()
+    return int(profile["historyId"])
+
+
+def fetch_new_message_ids_since(service, start_history_id: int) -> tuple[list[str], int]:
+    """
+    Return (new_inbox_message_ids, new_history_id) for messages added to the
+    inbox since start_history_id, using Gmail's history.list watermark
+    (cheaper and more precise than re-polling is:unread every cycle).
+
+    Raises HistoryIdExpired if start_history_id is too old for Gmail to
+    resolve — the caller should re-anchor via current_history_id().
+    """
+    message_ids: list[str] = []
+    page_token = None
+    latest_history_id = start_history_id
+
+    while True:
+        try:
+            result = service.users().history().list(
+                userId="me",
+                startHistoryId=start_history_id,
+                historyTypes=["messageAdded"],
+                labelId="INBOX",
+                pageToken=page_token,
+            ).execute()
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise HistoryIdExpired(str(e)) from e
+            raise
+
+        for record in result.get("history", []):
+            for added in record.get("messagesAdded", []):
+                message_ids.append(added["message"]["id"])
+
+        if "historyId" in result:
+            latest_history_id = max(latest_history_id, int(result["historyId"]))
+
+        page_token = result.get("nextPageToken")
+        if not page_token:
+            break
+
+    # De-dupe while preserving order (a message can appear in multiple history records).
+    seen = set()
+    unique_ids = [m for m in message_ids if not (m in seen or seen.add(m))]
+    return unique_ids, latest_history_id
 
 
 def filter_for_corpus(emails: list[dict], min_words: int = 20) -> list[dict]:

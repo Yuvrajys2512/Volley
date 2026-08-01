@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Volley — Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 0 1rem; color: #1a1a1a; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1rem; }
+    dt { color: #666; }
+    form { display: inline; }
+    button { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #ccc; background: #fafafa; cursor: pointer; }
+    button.danger { border-color: #c0392b; color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>Volley is watching {{ email }}</h1>
+  <div id="status" {% if corpus_building %}hx-get="/app/status" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+    <dl>
+      <dt>Account status</dt><dd>{{ account_status }}</dd>
+      <dt>Tone corpus</dt><dd>
+        {% if corpus_building %}building… ({{ corpus_size }} indexed so far){% else %}{{ corpus_size }} emails indexed{% endif %}
+      </dd>
+      <dt>Drafts created</dt><dd>{{ draft_count }}</dd>
+    </dl>
+  </div>
+
+  <form method="post" action="/app/toggle-pause">
+    <button type="submit">{{ "Resume" if user_status == "paused" else "Pause" }}</button>
+  </form>
+
+  <form method="post" action="/disconnect" onsubmit="return confirm('This deletes all your Volley data and disconnects Gmail. Continue?');">
+    <button type="submit" class="danger">Disconnect &amp; delete my data</button>
+  </form>
+</body>
+</html>

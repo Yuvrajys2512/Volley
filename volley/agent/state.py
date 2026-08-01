@@ -5,6 +5,7 @@ from typing_extensions import TypedDict
 class VolleyState(TypedDict):
     # ── Input ──────────────────────────────────────────────────────
     email: dict                         # raw email dict from Gmail reader
+    user_id: str | None                 # set by the server graph; None for the CLI
 
     # ── Extracted fields (populated at graph entry) ────────────────
     sender: str

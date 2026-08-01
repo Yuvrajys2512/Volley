@@ -1,0 +1,9 @@
+<div id="status" {% if corpus_building %}hx-get="/app/status" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+  <dl>
+    <dt>Account status</dt><dd>{{ account_status }}</dd>
+    <dt>Tone corpus</dt><dd>
+      {% if corpus_building %}building… ({{ corpus_size }} indexed so far){% else %}{{ corpus_size }} emails indexed{% endif %}
+    </dd>
+    <dt>Drafts created</dt><dd>{{ draft_count }}</dd>
+  </dl>
+</div>
